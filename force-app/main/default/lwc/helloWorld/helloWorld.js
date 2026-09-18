@@ -1,0 +1,1 @@
+/* Simulated metadata content for helloWorld (LightningComponentBundle) */
