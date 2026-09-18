@@ -1,0 +1,161 @@
+<template>
+    <lightning-card title="Code Checker" icon-name="utility:compare">
+        <!-- Buttons in standard header slot -->
+        <div slot="actions">
+            <lightning-button label="Load Sample Code" onclick={loadSampleData}
+                class="slds-m-horizontal_xx-small"></lightning-button>
+            <lightning-button label="Reset" variant="neutral" onclick={handleReset}
+                class="slds-m-horizontal_xx-small"></lightning-button>
+            <lightning-button label="Compare" variant="brand" onclick={handleCompare}
+                class="slds-m-horizontal_xx-small"></lightning-button>
+        </div>
+
+        <div class="slds-p-around_medium">
+            <!-- Stats Dashboard (only show if compared) -->
+            <template if:true={hasResults}>
+                <div class="slds-grid slds-wrap slds-gutters slds-m-bottom_medium stats-container">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-m-bottom_small">
+                        <div class="stat-card match-stat">
+                            <span class="stat-label">Match Percentage</span>
+                            <span class="stat-val">{stats.matchPercentage}%</span>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-m-bottom_small">
+                        <div class="stat-card addition-stat">
+                            <span class="stat-label">Additions</span>
+                            <span class="stat-val">+{stats.additions} lines</span>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 slds-m-bottom_small">
+                        <div class="stat-card deletion-stat">
+                            <span class="stat-label">Deletions</span>
+                            <span class="stat-val">-{stats.deletions} lines</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Options Panel -->
+            <div class="slds-grid slds-wrap slds-grid_vertical-align-center slds-m-bottom_medium options-bar">
+                <!-- Checkboxes -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_2-of-3 slds-grid slds-gutters">
+                    <div class="slds-col">
+                        <lightning-input type="checkbox" label="Ignore Whitespace" checked={ignoreWhitespace}
+                            onchange={handleToggleWhitespace}>
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input type="checkbox" label="Case Insensitive" checked={caseInsensitive}
+                            onchange={handleToggleCase}>
+                        </lightning-input>
+                    </div>
+                </div>
+                <!-- View Mode Selector -->
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-3 view-mode-col slds-m-top_x-small">
+                    <lightning-radio-group name="viewMode" label="View Mode" options={viewModeOptions} value={viewMode}
+                        type="button" onchange={handleViewModeChange} variant="label-hidden">
+                    </lightning-radio-group>
+                </div>
+            </div>
+
+            <!-- Code Input Areas -->
+            <div class="slds-grid slds-wrap slds-gutters slds-m-bottom_medium">
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-bottom_small">
+                    <label class="slds-form-element__label code-area-label">Original Code</label>
+                    <textarea class="slds-textarea code-input original-input"
+                        placeholder="Paste your original code here..." oninput={handleOriginalChange}></textarea>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-m-bottom_small">
+                    <label class="slds-form-element__label code-area-label">Modified Code</label>
+                    <textarea class="slds-textarea code-input modified-input"
+                        placeholder="Paste your modified code here..." oninput={handleModifiedChange}></textarea>
+                </div>
+            </div>
+
+            <!-- Diff Output Display -->
+            <template if:true={hasResults}>
+                <div class="diff-viewer-wrapper slds-m-top_large">
+                    <h3 class="slds-text-heading_small slds-m-bottom_small comparison-title">Comparison Output</h3>
+
+                    <!-- Navigation badges panel to jump to changes
+                    <template if:true={changesList.length}>
+                        <div class="slds-m-bottom_medium changes-nav-panel">
+                            <span class="changes-nav-label slds-m-right_small">Jump to:</span>
+                            <div class="changes-badges-list">
+                                <template for:each={changesList} for:item="change">
+                                    <button 
+                                        key={change.key} 
+                                        class={change.badgeClass} 
+                                        data-key={change.key} 
+                                        onclick={handleJumpToChange}>
+                                        {change.label}
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </template> -->
+
+                    <template if:false={changesList.length}>
+                        <div
+                            class="slds-align_absolute-center slds-m-vertical_medium slds-text-color_weak no-changes-text">
+                            No differences found. The two code blocks are identical.
+                        </div>
+                    </template>
+
+
+
+                    <!-- Side by Side Mode -->
+                    <template if:true={isSideBySide}>
+                        <div class="side-by-side-container">
+                            <div class="diff-pane-header slds-grid">
+                                <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">Original Code</div>
+                                <div class="slds-col slds-size_1-of-2 slds-p-horizontal_small">Modified Code</div>
+                            </div>
+                            <div class="diff-panes-wrapper slds-grid">
+                                <!-- Left Pane (Original) -->
+                                <div class="left-pane slds-col slds-size_1-of-2 pane-scroll"
+                                    onscroll={handleLeftScroll}>
+                                    <div class="code-block">
+                                        <template for:each={alignedRows} for:item="row">
+                                            <div key={row.key} class={row.left.class} data-key={row.key}>
+                                                <span class="line-num">{row.left.lineNum}</span>
+                                                <span class="line-content">{row.left.text}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <!-- Right Pane (Modified) -->
+                                <div class="right-pane slds-col slds-size_1-of-2 pane-scroll"
+                                    onscroll={handleRightScroll}>
+                                    <div class="code-block">
+                                        <template for:each={alignedRows} for:item="row">
+                                            <div key={row.key} class={row.right.class} data-key={row.key}>
+                                                <span class="line-num">{row.right.lineNum}</span>
+                                                <span class="line-content">{row.right.text}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Inline Mode -->
+                    <template if:true={isInline}>
+                        <div class="inline-container pane-scroll">
+                            <div class="code-block">
+                                <template for:each={inlineLines} for:item="line">
+                                    <div key={line.key} class={line.class} data-key={line.key}>
+                                        <span class="line-num">{line.lineNum}</span>
+                                        <span class="line-indicator">{line.indicator}</span>
+                                        <span class="line-content">{line.text}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
