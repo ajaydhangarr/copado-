@@ -1,0 +1,22 @@
+<template>
+    <lightning-card title="Accounts">
+        <template if:true={accounts.data}>
+            <template if:true={accounts.data.length}>
+                <ul class="slds-m-around_medium">
+                    <template for:each={accounts.data} for:item="acc">
+                        <li key={acc.Id} class="slds-box slds-m-bottom_x-small">
+                            <strong>{acc.Name}</strong> - {acc.Industry}
+                        </li>
+                    </template>
+                </ul>
+            </template>
+            <template if:false={accounts.data.length}>
+                <p class="slds-p-around_medium">No accounts found.</p>
+            </template>
+        </template>
+
+        <template if:true={accounts.error}>
+            <p class="slds-text-color_error slds-p-around_medium">{errorMessage}</p>
+        </template>
+    </lightning-card>
+</template>
