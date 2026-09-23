@@ -1,7 +1,1 @@
-import { LightningElement } from 'lwc';
-
-export default class MyComponent extends LightningElement {
-    handleClick() {
-        console.log('Button clicked');
-    }
-}
+/* Simulated metadata content for naved (LightningComponentBundle) */
