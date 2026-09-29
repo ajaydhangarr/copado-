@@ -8,4 +8,10 @@ public with sharing class MySampleClass {
             LIMIT 10
         ];
     }
+
+    @AuraEnabled(cacheable=true)
+    public static String getGreeting() {
+        return 'Hello from MySampleClass!';
+    }
 }
+// test
