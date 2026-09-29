@@ -6,4 +6,8 @@ public with sharing class PracticeApex {
     public static String getStatus() {
         return 'Practice Apex class is working';
     }
+
+    public static String getWelcomeMessage(String name) {
+        return 'Welcome ' + name + '! You are learning Apex.';
+    }
 }
