@@ -1,1 +1,3 @@
-/* Simulated metadata content for mycopadotst (LightningComponentBundle) */
+import { LightningElement } from 'lwc';
+
+export default class Mycopadotst extends LightningElement {}
